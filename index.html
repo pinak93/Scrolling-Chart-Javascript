@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Animating in Code!</title>
+  <style>
+    body {
+      background-color: rgb(255, 255, 255);
+      margin: 30px;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    #myCanvas {
+      border: 5px black solid;
+      overflow: hidden;
+      background-color: #000000;
+      display: flex;
+      align-items: center;
+    }
+
+    #button1,#button2,#button3 {
+      background-color: gold;
+      margin-top: 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border: 5px solid #333;
+      outline: none;
+    }
+    #button1:hover,#button2:hover,#button3:hover {
+      background-color: coral;
+    }
+  </style>
+</head>
+<script>
+      class Queue{
+            constructor(){
+                this.items=[];
+            }
+            enqueue(element) 
+            {     
+                this.items.push(element); 
+            } 
+            dequeue() 
+            { 
+                if(this.isEmpty()) 
+                    return "Underflow"; 
+                return this.items.shift(); 
+            } 
+            front() 
+            {  
+                if(this.isEmpty()) 
+                    return "No elements in Queue"; 
+                return this.items[0]; 
+            } 
+            isEmpty() 
+            { 
+                return this.items.length == 0; 
+            }
+            size() 
+            { 
+                return this.items.length; 
+            }
+            clear() 
+            { 
+                return this.items=[]; 
+            }
+            getItemIndex(index) 
+            { 
+                if(index>=this.items.length) return "OverFlow";
+                return this.items[index]; 
+            }
+        }
+
+    </script>
+<body>
+    <canvas id="myCanvas" width="800" height="400"  >
+    </canvas>
+
+  <input id="button1" type="button" value="Play"></input>
+  <input id="button2" type="button" value="Pause"></input>
+  <input id="button3" type="button" value="Reset"></input>
+  <script>
+    var play = document.querySelector("#button1");
+    var pause = document.querySelector("#button2");
+    pause.addEventListener("click", setPauseOrStop);
+    var resetCanvas = document.querySelector("#button3");
+    resetCanvas.addEventListener("click", reset);
+    var time=0;
+    var que=new Queue();
+    var DataPoints=100;
+    var window=10;
+    var pause=false;
+    var canvas = document.getElementById("myCanvas");
+    var context = canvas.getContext("2d");
+   
+    play.onclick = function() {
+      pause=false;
+      let timer = setInterval(function() {
+            draw(context);
+            if(time>100 || pause) {
+              clearInterval(timer);
+              pause=false;
+              }
+            time++;
+      }, 100);
+    }
+
+    function draw(context) {     //draw in canva
+            clearCanvas(context);
+            showAxes(context);
+            context.save();            
+            plotline(context);
+            context.restore();
+        }
+    function setPauseOrStop(){   //Pause the event
+      pause=true;
+    }
+    function clearCanvas(){   //clear canvas
+          context.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    function reset(){   /// reset the canvas points
+          time=0;
+          que.clear();
+          if(!pause)clearCanvas();
+    }
+        function showAxes(ctx,axes) {    //////draw the axis
+            var width = ctx.canvas.width;
+            var height = ctx.canvas.height;
+            
+            ctx.beginPath();
+            ctx.strokeStyle = "rgb(255,255,224)";
+            ///Y Axis
+            var y=0;
+            for(var i=0;i<10;i++){
+              ctx.moveTo(0, y);
+              ctx.lineTo(width, y);
+              y+=height/10;
+            }
+            ///X Axis and the points
+            var x=0;
+            var index;
+            if(time>10)index=time-10; else index=0;
+            for(var i=0;i<10;i++){
+              ctx.moveTo(x, 0);
+              ctx.lineTo(x, height);
+              ctx.font = "15px Arial";
+              ctx.fillStyle = "white";
+              ctx.fillText(""+index, x, height); 
+              x+=width/10;
+              index++;
+            }
+            ctx.stroke();
+        }
+        function plotline(ctx) {    //plot points and line
+            var width = ctx.canvas.width;
+            var height = ctx.canvas.height;
+            var scale = 20;
+
+            ctx.beginPath();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "rgb(255,255,0)";  
+             que.enqueue(Math.random()*height );    //Add random value in the queue
+            var x = 0;
+            ctx.moveTo(x, que.getItemIndex(0));
+            var index=1;
+            while (index < que.size()) {
+                x+=width/9;
+                ctx.lineTo(x, que.getItemIndex(index));
+                console.log(x+" "+que.getItemIndex(index) +" "+que.size()+" "+time);
+                index++;
+            }
+            ctx.stroke();
+            ctx.save();
+            while(que.size()==10)que.dequeue(); //remove if the size is greater than window size
+        }
+    </script>
+</body>
+
+</html>
